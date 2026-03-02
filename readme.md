@@ -37,7 +37,7 @@ Lade die benötigten Modelle direkt in den Ollama-Container:
 
     Bash
     docker exec -it ollama ollama pull mistral-small:22b
-    docker exec -it ollama ollama pull llama3.2:3b
+    docker exec -it ollama ollama pull qwen3:14b
     docker exec -it ollama ollama pull qwen3-embedding:4b
 
 📂 Daten-Ingestion (RAG)
