@@ -72,6 +72,9 @@ async def handle_query(query: ChatQuery):
     TYPE: [SMALLTALK, RAG oder SEARCH]
     QUERY: [Präzise Suchbegriffe]
 
+    AKTUELLE FRAGE:
+    {last_user_message}
+
     ### SCHRITT 1: KLASSIFIZIERUNG (TYPE)
 
     - SMALLTALK: Begrüßung, Danke, Geplänkel oder allgemeine Fragen ohne SCHNOOR-Bezug.
@@ -98,9 +101,6 @@ async def handle_query(query: ChatQuery):
 
     VERLAUF:
     {history_context}
-
-    AKTUELLE FRAGE:
-    {last_user_message}
 
     """
     
@@ -204,3 +204,4 @@ async def handle_query(query: ChatQuery):
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8050)
+
