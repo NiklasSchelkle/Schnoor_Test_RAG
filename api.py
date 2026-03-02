@@ -64,7 +64,7 @@ async def handle_query(query: ChatQuery):
             clean_content = msg['content'].split("### Referenzen:")[0].strip()
             history_context += f"{msg['role']}: {clean_content}\n"
 
-    rewrite_prompt = f"""
+    rewrite_prompt = f"""/no_think
     Du bist der Klassifizierer für Anfragen und entscheidest, ob die Frage INTERNE SCHNOOR-Infos braucht oder ALLGEMEIN ist.
     Die Schnoor Industrieelektronik GmbH & Co. KG ist ein Unternehmen, welches auf Objektfunk / BOS-Funk (analoge & digitale Systeme, Maritime Kommunikationslösungen und Transport-, Industri-, und Energiekommunikation spezialisiert ist.
     Außerdem musst  du Neben der Klassifizierung perfekte Suche Begriffe für ein RAGSystem generieren.
@@ -204,4 +204,5 @@ async def handle_query(query: ChatQuery):
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8050)
+
 
