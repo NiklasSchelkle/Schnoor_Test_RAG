@@ -44,9 +44,10 @@ def load_models():
 
     # Schnelles LLM: Qwen/Llama (2k Kontext für Klassifizierung)
     fast_llm = ChatOllama(
-        model="llama3.1:8b", 
+        model="qwen3:14b", 
         num_ctx=4096, 
-        **common_args
+        **common_args,
+        extra_body={"think": False}
     )
 
     # Embeddings: Qwen3 (2k Kontext für semantische Suche)
@@ -289,3 +290,4 @@ def search_documents_only(question):
             seen.add(title)
 
     return "Dokument-Suche abgeschlossen.","", found_docs
+
