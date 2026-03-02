@@ -44,7 +44,7 @@ def load_models():
 
     # Schnelles LLM: Qwen/Llama (2k Kontext für Klassifizierung)
     fast_llm = ChatOllama(
-        model="qwen3:14b", 
+        model="mistral-small:22b", 
         num_ctx=4096, 
         **common_args,
     )
@@ -289,5 +289,6 @@ def search_documents_only(question):
             seen.add(title)
 
     return "Dokument-Suche abgeschlossen.","", found_docs
+
 
 
