@@ -1,0 +1,32 @@
+# Basis-Bibliotheken
+python-dotenv==1.0.1
+
+# Dokumentenverarbeitung & OCR
+docling==2.15.0
+docling-core==2.14.0
+
+# KI & LLM Frameworks
+langchain==0.3.7
+langchain-openai==0.2.10
+langchain-community==0.3.7
+langchain-text-splitters==0.3.2
+langchain-huggingface==0.1.2
+
+# Datenbank-Verbindung
+psycopg2-binary==2.9.10
+
+# Hilfsprogramme
+openai==1.54.3
+pydantic==2.9.2
+nltk==3.8.1
+
+# reranking und deep learning
+sentence-transformers==3.3.1
+# torch==2.5.1 installiere ich im Dockerfile
+
+# Api-Framework
+fastapi==0.115.0
+uvicorn==0.32.0
+requests==2.32.3
+
+httpx==0.27.2

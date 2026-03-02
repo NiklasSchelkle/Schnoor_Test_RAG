@@ -1,0 +1,145 @@
+version: '3.8'
+
+services:
+  # --- CLOUDFLARE TUNNEL ---
+  # Dieser Service baut die Verbindung von deinem PC zu Cloudflare auf
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared_tunnel
+    restart: always
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    command: tunnel run
+    networks:
+      - rag-network
+
+  # --- REVERSE PROXY (CADDY) ---
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    restart: unless-stopped
+    # Keine externen Ports nötig dank Tunnel!
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - rag-network
+    depends_on:
+      - open-webui
+      - pgadmin
+      - file-server
+
+  # --- RAG-BACKEND ---
+  rag-backend:
+    build: .
+    container_name: rag_backend
+    env_file: .env
+    volumes:
+      - ./files_to_embed:/app/data/ingest:ro
+      - hf_cache:/app/models/huggingface
+    environment:
+      - DOC_DIR=/app/data/ingest
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+    networks:
+      - rag-network
+    depends_on:
+      - postgres
+      - ollama
+    deploy:                          # ← NEU für Reranking via GGPU
+      resources:                     
+        reservations:                
+          devices:                   
+            - driver: nvidia         
+              count: 1               
+              capabilities: [gpu]
+
+  # --- FRONTEND ---
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open_webui
+    restart: always
+    environment:
+      - 'WEBUI_AUTH=True'
+      - 'OLLAMA_BASE_URL=http://ollama:11434'
+    volumes:
+      - open-webui:/app/backend/data
+    networks:
+      - rag-network
+
+  # --- DATENBANK ---
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: rag_postgres
+    env_file: .env 
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./VektorErweiterung.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - rag-network
+
+  # --- DATENBANK VERWALTUNG ---
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: rag_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+    networks:
+      - rag-network
+    depends_on:
+      - postgres
+
+  # --- FILE SERVER (PDF VORSCHAU) ---
+  file-server:
+    image: nginx:alpine
+    container_name: rag_file_server
+    volumes:
+      - ./files_to_embed:/usr/share/nginx/html/download:ro
+    networks:
+      - rag-network
+    command: /bin/sh -c "nginx -g 'daemon off;'"
+
+  # --- KI ENGINE ---
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    restart: always
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - rag-network
+    environment:
+      - OLLAMA_MAX_LOADED_MODELS=4
+      - OLLAMA_NUM_PARALLEL=4
+      - OLLAMA_KEEP_ALIVE=-1
+      - OLLAMA_NUM_CTX=16384
+      - OLLAMA_FLASH_ATTENTION=1
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+networks:
+  rag-network:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
+  postgres_data:
+  open-webui:
+  ollama_data:
+  hf_cache:
+
+
+
+
+

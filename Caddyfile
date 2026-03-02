@@ -1,0 +1,52 @@
+# =================================================================
+# 1. WHITELIST DEFINITION (ÜBER CLOUDFLARE HEADER)
+# =================================================================
+(whitelist) {
+    # Wir prüfen hier direkt den Header, den Cloudflare bei jeder 
+    # Anfrage mitschickt. Das ist fälschungssicher über den Tunnel.
+    @ist_meine_ip {
+        # Liste hier alle deine IPs auf, die Zugriff haben sollen:
+        header Cf-Connecting-Ip 77.20.255.86
+        header Cf-Connecting-Ip 2a02:8108:2617:d400:8974:9a54:687d:c730
+    }
+}
+
+# =================================================================
+# 2. HAUPTDOMAIN (Chat & PDF-Zugriff)
+# =================================================================
+http://schnoorki.knowladgebaseai.space {
+    import whitelist
+
+    # DATEI-ZUGRIFFS-LOGIK
+    handle /download/* {
+        # Wenn der Cloudflare-Header eine deiner IPs enthält -> Durchlassen
+        handle @ist_meine_ip {
+            reverse_proxy file-server:80
+        }
+
+        # Falls die IP nicht passt, zeigen wir sie zur Diagnose an
+        handle {
+            respond "Zugriff verweigert! 403"
+        }
+    }
+
+    # OPEN WEBUI (Das Chat-Interface)
+    handle {
+        reverse_proxy open_webui:8080
+    }
+}
+
+# =================================================================
+# 3. DATENBANK-DOMAIN (pgAdmin)
+# =================================================================
+http://schnoordatabase.knowladgebaseai.space {
+    import whitelist
+
+    handle @ist_meine_ip {
+        reverse_proxy rag_pgadmin:80
+    }
+
+    handle {
+        respond "Datenbank-Verwaltung nicht öffentlich erreichbar." 403
+    }
+}
