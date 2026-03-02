@@ -1,4 +1,5 @@
 Dieses Repository enthält eine vollständige Pipeline für ein Retrieval-Augmented Generation (RAG) System, basierend auf Docker, Ollama und Open WebUI.
+
 🚀 Installation & Setup
 
 Folge diesen Schritten, um die Umgebung auf deinem Server aufzusetzen.
@@ -24,6 +25,7 @@ Erstelle oder editiere die .env Datei und füge deinen Cloudflare Tunnel-Token h
     nano .env
 
 3. Container starten
+
 Baue und starte die Docker-Container im Hintergrund:
 
     Bash
